@@ -1,0 +1,3 @@
+C:/Users/Endosight/Desktop/workspace/zed-examples/svo recording/recording/build/CMakeFiles/ZED_SVO_Recording.dir
+C:/Users/Endosight/Desktop/workspace/zed-examples/svo recording/recording/build/CMakeFiles/ALL_BUILD.dir
+C:/Users/Endosight/Desktop/workspace/zed-examples/svo recording/recording/build/CMakeFiles/ZERO_CHECK.dir

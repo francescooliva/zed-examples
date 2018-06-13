@@ -1,0 +1,7 @@
+﻿  Building Custom Rule C:/Users/Endosight/Desktop/workspace/zed-examples/svo recording/recording/CMakeLists.txt
+  CMake does not need to re-run because C:/Users/Endosight/Desktop/workspace/zed-examples/svo recording/recording/build/CMakeFiles/generate.stamp is up-to-date.
+cl : Command line warning D9002: ignoring unknown option '-g'
+cl : Command line warning D9002: ignoring unknown option '-O3'
+  main.cpp
+  ZED_SVO_Recording.vcxproj -> C:\Users\Endosight\Desktop\workspace\zed-examples\svo recording\recording\build\Debug\ZED_SVO_Recording.exe
+  ZED_SVO_Recording.vcxproj -> C:/Users/Endosight/Desktop/workspace/zed-examples/svo recording/recording/build/Debug/ZED_SVO_Recording.pdb (Full PDB)

@@ -39,7 +39,9 @@ using namespace std;
 enum APP_TYPE {
     LEFT_AND_RIGHT,
     LEFT_AND_DEPTH,
-    LEFT_AND_DEPTH_16
+    LEFT_AND_DEPTH_16,
+	LEFT,
+	RIGHT
 };
 
 int main(int argc, char **argv) {
@@ -55,6 +57,8 @@ int main(int argc, char **argv) {
         cout << "                   2=Export LEFT+RIGHT image sequence.\n";
         cout << "                   3=Export LEFT+DEPTH_VIEW image sequence.\n";
         cout << "                   4=Export LEFT+DEPTH_16Bit image sequence.\n";
+		cout << "                   5=Export LEFT AVI.\n";
+		cout << "                   6=Export LEFT AVI.\n";
         cout << " A and B need to end with '/' or '\\'\n\n";
         cout << "Examples: \n";
         cout << "  (AVI LEFT+RIGHT)   ZED_SVO_Export \"path/to/file.svo\" \"path/to/output/file.avi\" 0\n";
@@ -62,6 +66,8 @@ int main(int argc, char **argv) {
         cout << "  (SEQUENCE LEFT+RIGHT)   ZED_SVO_Export \"path/to/file.svo\" \"path/to/output/folder\" 2\n";
         cout << "  (SEQUENCE LEFT+DEPTH)   ZED_SVO_Export \"path/to/file.svo\" \"path/to/output/folder\" 3\n";
         cout << "  (SEQUENCE LEFT+DEPTH_16Bit)   ZED_SVO_Export \"path/to/file.svo\" \"path/to/output/folder\" 4\n";
+		cout << "  (AVI LEFT)   ZED_SVO_Export \"path/to/file.svo\" \"path/to/output/file.avi\" 5\n";
+		cout << "  (AVI RIGHT)   ZED_SVO_Export \"path/to/file.svo\" \"path/to/output/file.avi\" 6\n";
         cout << "\nPress [Enter] to continue";
         cin.ignore();
         return 1;
@@ -76,9 +82,12 @@ int main(int argc, char **argv) {
         app_type = LEFT_AND_DEPTH;
     if (!strcmp(argv[3], "4"))
         app_type = LEFT_AND_DEPTH_16;
-
+	if (!strcmp(argv[3], "5"))
+		app_type = LEFT;
+	if (!strcmp(argv[3], "6"))
+		app_type = RIGHT;
     // Check if exporting to AVI or SEQUENCE
-    if (strcmp(argv[3], "0") && strcmp(argv[3], "1"))
+    if (strcmp(argv[3], "0") && strcmp(argv[3], "1") && strcmp(argv[3], "5") && strcmp(argv[3], "6"))
         output_as_video = false;
 
     if (!output_as_video && !directoryExists(output_path)) {
@@ -112,11 +121,14 @@ int main(int argc, char **argv) {
     int width = image_size.width;
     int height = image_size.height;
     int width_sbs = image_size.width * 2;
-
+	cout << "Resolution: "  << width << " x " << height << endl;
     // Prepare side by side image containers
     cv::Size image_size_sbs(width_sbs, height); // Size of the side by side image
+	cv::Size image_size_os(width, height); // Size one side image
     cv::Mat svo_image_sbs_rgba(image_size_sbs, CV_8UC4); // Container for ZED RGBA side by side image
     cv::Mat ocv_image_sbs_rgb(image_size_sbs, CV_8UC3); // Container for OpenCV RGB side by side image
+	cv::Mat svo_image_os_rgba(image_size_os, CV_8UC4); // Container for ZED RGBA one side image
+	cv::Mat ocv_image_os_rgb(image_size_os, CV_8UC3); // Container for OpenCV RGB one side image
 
     Mat left_image(width, height, MAT_TYPE_8U_C4);
     cv::Mat left_image_ocv = slMat2cvMat(left_image);
@@ -131,8 +143,10 @@ int main(int argc, char **argv) {
     cv::VideoWriter* video_writer;
     if (output_as_video) {
         int fourcc = CV_FOURCC('M', '4', 'S', '2'); // MPEG-4 part 2 codec
-        int frame_rate = fmax(zed.getCameraFPS(), 25); // Minimum write rate in OpenCV is 25
-        video_writer = new cv::VideoWriter(output_path, fourcc, frame_rate, image_size_sbs);
+        int frame_rate = fmax(zed.getCameraFPS(), 15); // changing to 15fps for 2K resolution frame rate limit
+		if(app_type == LEFT || app_type == RIGHT)
+			video_writer = new cv::VideoWriter(output_path, fourcc, frame_rate, image_size_os);
+		else video_writer = new cv::VideoWriter(output_path, fourcc, frame_rate, image_size_sbs);
         if (!video_writer->isOpened()) {
             cout << "OpenCV video writer cannot be opened. Please check the .avi file path and write permissions." << endl;
             zed.close();
@@ -156,9 +170,15 @@ int main(int argc, char **argv) {
             svo_position = zed.getSVOPosition();
 
             // Retrieve SVO images
-            zed.retrieveImage(left_image, VIEW_LEFT);
+			if(app_type != RIGHT)
+				zed.retrieveImage(left_image, VIEW_LEFT);
 
             switch (app_type) {
+			case LEFT:
+				break;
+			case RIGHT:
+				zed.retrieveImage(right_image, VIEW_RIGHT);
+				break;
             case LEFT_AND_RIGHT:
                 zed.retrieveImage(right_image, VIEW_RIGHT);
                 break;
@@ -172,18 +192,32 @@ int main(int argc, char **argv) {
                 break;
             }
 
-            if (output_as_video) {
-                // Copy the left image to the left side of SBS image
-                left_image_ocv.copyTo(svo_image_sbs_rgba(cv::Rect(0, 0, width, height)));
+			if (output_as_video) {
+				if (app_type == LEFT) {
+					left_image_ocv.copyTo(svo_image_os_rgba);
+					cv::cvtColor(svo_image_os_rgba, ocv_image_os_rgb, CV_RGBA2RGB);
+					video_writer->write(ocv_image_os_rgb);
+				}
+				else if (app_type == RIGHT) {
+					right_image_ocv.copyTo(svo_image_os_rgba);
+					cv::cvtColor(svo_image_os_rgba, ocv_image_os_rgb, CV_RGBA2RGB);
+					video_writer->write(ocv_image_os_rgb);
+				}
+				else {
+					// Copy the left image to the left side of SBS image
+					left_image_ocv.copyTo(svo_image_sbs_rgba(cv::Rect(0, 0, width, height)));
 
-                // Copy the right image to the right side of SBS image
-                right_image_ocv.copyTo(svo_image_sbs_rgba(cv::Rect(width, 0, width, height)));
+					// Copy the right image to the right side of SBS image
+					right_image_ocv.copyTo(svo_image_sbs_rgba(cv::Rect(width, 0, width, height)));
 
-                // Convert SVO image from RGBA to RGB
-                cv::cvtColor(svo_image_sbs_rgba, ocv_image_sbs_rgb, CV_RGBA2RGB);
+					// Convert SVO image from RGBA to RGB
+					cv::cvtColor(svo_image_sbs_rgba, ocv_image_sbs_rgb, CV_RGBA2RGB);
 
-                // Write the RGB image in the video
-                video_writer->write(ocv_image_sbs_rgb);
+					// Write the RGB image in the video
+					video_writer->write(ocv_image_sbs_rgb);
+				}
+
+
             }
             else {
                 // Generate filenames

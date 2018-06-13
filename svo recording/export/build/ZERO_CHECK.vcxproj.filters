@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\Endosight\Desktop\workspace\zed-examples\svo recording\export\build\CMakeFiles\a6ab68249858039c301a66e639dc8d3d\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{94245B4C-ACFA-31C5-80A6-628C5CC9BB92}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

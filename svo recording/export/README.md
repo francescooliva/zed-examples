@@ -50,6 +50,8 @@ Please use the following parameters from the command line:
 				   2=Export LEFT+RIGHT image sequence.
 				   3=Export LEFT+DEPTH_VIEW image sequence.
 				   4=Export LEFT+DEPTH_16Bit image sequence.
+				   5=Export LEFT AVI.
+				   6=Export RIGHT AVI.
  A and B need to end with '/' or '\'
 
 Examples:
@@ -58,6 +60,8 @@ Examples:
   (SEQUENCE LEFT+RIGHT)         ZED_SVO_Export "path/to/file.svo" "path/to/output/folder/" 2
   (SEQUENCE LEFT+DEPTH)         ZED_SVO_Export "path/to/file.svo" "path/to/output/folder/" 3
   (SEQUENCE LEFT+DEPTH_16Bit)   ZED_SVO_Export "path/to/file.svo" "path/to/output/folder/" 4
+  (AVI LEFT)              		ZED_SVO_Export "path/to/file.svo" "path/to/output/file.avi" 5
+  (AVI RIGHT)              		ZED_SVO_Export "path/to/file.svo" "path/to/output/file.avi" 6
 ```
 
 ## Troubleshooting
